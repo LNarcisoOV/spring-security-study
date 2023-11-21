@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.security.model.User;
 import com.security.model.dto.AuthenticationDTO;
 import com.security.model.dto.RegisterDTO;
+import com.security.service.TokenService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -21,10 +23,14 @@ public class AuthenticationController {
     @Autowired
     private AuthenticationManager authManager;
     
+    @Autowired
+    private TokenService tokenService;
+    
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid AuthenticationDTO authenticationDTO) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(authenticationDTO.login(), authenticationDTO.password());
         var auth = authManager.authenticate(usernamePassword);
+        var token = tokenService.generateToken((User)auth.getPrincipal());
         return ResponseEntity.ok().build();       
     }
     
